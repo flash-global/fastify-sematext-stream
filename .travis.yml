@@ -1,0 +1,23 @@
+language: node_js
+
+os: linux
+dist: xenial
+
+node_js: 16
+
+import:
+  - source: flash-global/travis-public:common.yml@master
+    mode: deep_merge_append
+  - source: flash-global/travis-public:js/common.yml@master
+    mode: deep_merge_append
+
+before_deploy:
+  - npm --no-git-tag-version --allow-same-version version $TRAVIS_TAG
+
+deploy:
+  - provider: npm
+    skip_cleanup: true
+    email: $npm_mail
+    api_key: $npm_key
+    on:
+      tags: true
