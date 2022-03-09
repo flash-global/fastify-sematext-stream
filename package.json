@@ -1,6 +1,6 @@
 {
   "name": "@redspher2021/fastify-sematext-stream",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "stream to plug on sematext logger to send logs to sematext",
   "main": "index.js",
   "scripts": {
@@ -35,5 +35,9 @@
     "ts-jest": "^27.1.3",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
