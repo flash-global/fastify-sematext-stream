@@ -15,18 +15,20 @@ const loggers = {
 
 const DEFAULT_LOG_LEVEL = 30;
 
-type Config = {
+type StreamConfig = {
     baseURL: string,
     index: string,
 };
 
-type StreamLogger = FastifyLoggerStreamDestination & {
-    [key: symbol]: boolean,
+type StreamState = {
+    [symbols.needsMetadataGsym]: boolean,
     lastLevel: LogLevel,
-    config: Config | null,
+    config: StreamConfig | null,
 };
 
-const sendToSematext = async (msg: string, logLevel: LogLevel, config: Config) => {
+type Stream = FastifyLoggerStreamDestination & StreamState;
+
+const sendToSematext = async (msg: string, logLevel: LogLevel, config: StreamConfig) => {
     const url = `${config.baseURL}/${config.index}/${loggers[logLevel].name}`;
 
     try {
@@ -47,7 +49,7 @@ const sendToSematext = async (msg: string, logLevel: LogLevel, config: Config) =
     }
 };
 
-const stream: StreamLogger = {
+const stream: Stream = {
     [symbols.needsMetadataGsym]: true,
     lastLevel: DEFAULT_LOG_LEVEL,
     config: null,
@@ -58,18 +60,16 @@ const stream: StreamLogger = {
         }
 
         if (this.config !== null) {
-            setImmediate(() => sendToSematext(msg, this.lastLevel, this.config as Config));
+            setImmediate(() => sendToSematext(msg, this.lastLevel, this.config as StreamConfig));
         }
 
         loggers[this.lastLevel](msg.trim());
     },
 };
 
-const build = (
-    config: Config | null = null,
-): StreamLogger => Object.assign<StreamLogger, { config: Config | null, [key: symbol]: boolean, lastLevel: LogLevel }>(
+const build = (config: StreamConfig | null = null): Stream => Object.assign<Stream, StreamState>(
     stream,
     { config: config, [symbols.needsMetadataGsym]: true, lastLevel: DEFAULT_LOG_LEVEL },
 );
 
-export { Config, LogLevel, StreamLogger, build };
+export { StreamConfig, StreamState, Stream, LogLevel, build };
