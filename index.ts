@@ -40,7 +40,7 @@ const sendToSematext = async (msg: string, logLevel: LogLevel, config: StreamCon
             message: error?.message,
         };
 
-        if (error?.isAxiosError) {
+        if (error?.isAxiosError && error.response) {
             content.response_data = error.response.data;
             content.response_status = error.response.status;
         }
