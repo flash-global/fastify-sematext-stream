@@ -67,7 +67,7 @@ test('sematext HTTP request fail - simple error', async () => {
     }));
 });
 
-test('sematext HTTP request fail - axios error', async () => {
+test('sematext HTTP request fail - axios error with response', async () => {
     const baseURL = 'https://sematext.com';
     const index = 'abcd';
     const msg = JSON.stringify({ message: 'toto', value: 32 });
@@ -108,6 +108,41 @@ test('sematext HTTP request fail - axios error', async () => {
         message: 'response error 500',
         response_data: { message: 'test' },
         response_status: 500,
+    }));
+});
+
+test('sematext HTTP request fail - axios error without response', async () => {
+    const baseURL = 'https://sematext.com';
+    const index = 'abcd';
+    const msg = JSON.stringify({ message: 'toto', value: 32 });
+
+    const stream = build({ baseURL, index });
+    stream.lastLevel = 30;
+
+    const error: AxiosError = {
+        message: 'response error 500',
+        name: 'error',
+        isAxiosError: true,
+        config: {},
+        toJSON: () => ({}),
+    };
+
+    mockedAxios.post.mockRejectedValueOnce(error);
+
+    stream.write(msg);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockedAxios.post).toHaveBeenCalledWith(
+        `${baseURL}/${index}/mockConstructor`,
+        msg,
+        { headers: { 'Content-Type': 'application/json' } },
+    );
+
+    expect(consoleInfoMock).toHaveBeenCalledWith(msg);
+    expect(consoleErrorMock).toHaveBeenCalledWith(JSON.stringify({
+        level: 50,
+        type: 'error-request-sematext',
+        message: 'response error 500',
     }));
 });
 
